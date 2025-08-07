@@ -1,0 +1,894 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## About Limit\nTop 20 newest articles",
+        "height": 80,
+        "width": 192,
+        "color": 6
+      },
+      "id": "967d4f6b-87ac-471d-a79b-dcd05e79775c",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1568,
+        624
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## 📡 RSS SOURCE:\n- High-quality AI-focused feed\n- Runs in parallel with others\n- Add more by duplicating this node",
+        "height": 144,
+        "width": 272,
+        "color": 4
+      },
+      "id": "ec520bad-fa7a-4f75-934d-b4c06406c467",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -128,
+        992
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "content": "## ⏰ DAILY TRIGGER\n- Runs at 9 AM daily\n- Change 'triggerAtHour' for different time\n- Manual trigger available for testing",
+        "width": 320,
+        "color": 5
+      },
+      "id": "790971e7-99d8-4343-b5fd-f53c8bc04f15",
+      "name": "Sticky Note3",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -656,
+        672
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "30d4f694-9378-42b4-b1d5-cbc38fb3e7fe",
+              "operator": {
+                "type": "dateTime",
+                "operation": "after"
+              },
+              "leftValue": "={{ $json.pubDate }}",
+              "rightValue": "={{ $today.minus({ days: 1 }) }}"
+            },
+            {
+              "id": "ai_relevance_filter",
+              "operator": {
+                "type": "string",
+                "operation": "regex"
+              },
+              "leftValue": "={{ ($json.title + ' ' + $json.conteudo).toLowerCase() }}",
+              "rightValue": "(artificial intelligence|Ai agent|machine learning|deep learning|neural network|gpt|llm|large language model|openai|chatgpt|claude|anthropic|google ai|deepmind|ai model|ai research|computer vision|natural language processing|nlp|ai safety|agi|artificial general intelligence|ai breakthrough|ai funding|ai startup|transformer|diffusion|generative ai|ai regulation|ai ethics|robotics ai|autonomous|ai chip|nvidia ai|ai compute|foundation model|multimodal|ai agent|layoff|viral|hugging face)"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a46741f1-0879-4799-b298-fb7ba883fdfb",
+      "name": "AI Relevance Filter",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        1200,
+        448
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2ffe594-180d-4e1d-b869-8056ac67015d",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "id": "87c5a171-9ab9-4043-a72a-32aec218fe63",
+              "name": "pubDate",
+              "type": "string",
+              "value": "={{ $json.pubDate }}"
+            },
+            {
+              "id": "978b05c9-6e6b-4a18-bc06-4de785b19413",
+              "name": "conteudo",
+              "type": "string",
+              "value": "={{ $json['content:encoded'] || $json.contentSnippet || $json.content }}"
+            },
+            {
+              "id": "source_url",
+              "name": "source",
+              "type": "string",
+              "value": "={{ $json.link }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2471460f-0c36-4c54-8085-c7b10a79e1fc",
+      "name": "Standardize Fields",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        256,
+        0
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "numberInputs": 6
+      },
+      "id": "96f801e6-62c5-4386-924c-d95100303b8a",
+      "name": "Merge All Sources",
+      "type": "n8n-nodes-base.merge",
+      "position": [
+        720,
+        384
+      ],
+      "typeVersion": 3.1
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "include": "specifiedFields",
+        "fieldsToInclude": "title, pubDate, conteudo, source",
+        "options": {}
+      },
+      "id": "14f45591-09be-4839-9605-155a442438e5",
+      "name": "Aggregate for AI",
+      "type": "n8n-nodes-base.aggregate",
+      "position": [
+        1792,
+        448
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "6781361b-26dc-40c5-b0fe-173d4bba0038",
+      "name": "Daily AI Digest Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "position": [
+        -528,
+        448
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "url": "https://www.artificialintelligence-news.com/feed/",
+        "options": {}
+      },
+      "id": "d0b4628d-5dfd-4ec6-81cf-90407233badb",
+      "name": "AI News",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        0,
+        0
+      ],
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.feedburner.com/venturebeat/SZYF",
+        "options": {}
+      },
+      "id": "6ebc8121-0969-46ed-bb6d-e6926d1f41d4",
+      "name": "VentureBeat AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        0,
+        176
+      ],
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.technologyreview.com/topic/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "id": "28bd0ff5-be3b-4b8e-8a3b-90e7ab5b705e",
+      "name": "MIT Tech Review AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        0,
+        336
+      ],
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://openai.com/blog/rss.xml",
+        "options": {}
+      },
+      "id": "f270069f-2d27-449e-891d-b52279eaef57",
+      "name": "OpenAI Blog",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        0,
+        496
+      ],
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "id": "e32482dc-5fa7-4273-a4b3-3c044670cee4",
+      "name": "TechCrunch AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        0,
+        640
+      ],
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.theverge.com/rss/index.xml",
+        "options": {}
+      },
+      "id": "961226dd-c717-4176-b657-2d3463ef33d1",
+      "name": "The Verge AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "position": [
+        0,
+        800
+      ],
+      "typeVersion": 1.1,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2ffe594-180d-4e1d-b869-8056ac67015d",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "id": "87c5a171-9ab9-4043-a72a-32aec218fe63",
+              "name": "pubDate",
+              "type": "string",
+              "value": "={{ $json.pubDate }}"
+            },
+            {
+              "id": "978b05c9-6e6b-4a18-bc06-4de785b19413",
+              "name": "conteudo",
+              "type": "string",
+              "value": "={{ $json['content:encoded'] || $json.contentSnippet || $json.content }}"
+            },
+            {
+              "id": "source_url",
+              "name": "source",
+              "type": "string",
+              "value": "={{ $json.link }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9b232d7c-727f-402b-901d-9aeb9a02ffc8",
+      "name": "Standardize Fields1",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        256,
+        176
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2ffe594-180d-4e1d-b869-8056ac67015d",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "id": "87c5a171-9ab9-4043-a72a-32aec218fe63",
+              "name": "pubDate",
+              "type": "string",
+              "value": "={{ $json.pubDate }}"
+            },
+            {
+              "id": "978b05c9-6e6b-4a18-bc06-4de785b19413",
+              "name": "conteudo",
+              "type": "string",
+              "value": "={{ $json['content:encoded'] || $json.contentSnippet || $json.content }}"
+            },
+            {
+              "id": "source_url",
+              "name": "source",
+              "type": "string",
+              "value": "={{ $json.link }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5aed7f63-68c0-467c-9ba9-720e30e0137b",
+      "name": "Standardize Fields2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        256,
+        336
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2ffe594-180d-4e1d-b869-8056ac67015d",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "id": "87c5a171-9ab9-4043-a72a-32aec218fe63",
+              "name": "pubDate",
+              "type": "string",
+              "value": "={{ $json.pubDate }}"
+            },
+            {
+              "id": "978b05c9-6e6b-4a18-bc06-4de785b19413",
+              "name": "conteudo",
+              "type": "string",
+              "value": "={{ $json['content:encoded'] || $json.contentSnippet || $json.content }}"
+            },
+            {
+              "id": "source_url",
+              "name": "source",
+              "type": "string",
+              "value": "={{ $json.link }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "aa6be1ec-44f9-47b7-99bb-c775f9753919",
+      "name": "Standardize Fields3",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        256,
+        496
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2ffe594-180d-4e1d-b869-8056ac67015d",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "id": "87c5a171-9ab9-4043-a72a-32aec218fe63",
+              "name": "pubDate",
+              "type": "string",
+              "value": "={{ $json.pubDate }}"
+            },
+            {
+              "id": "978b05c9-6e6b-4a18-bc06-4de785b19413",
+              "name": "conteudo",
+              "type": "string",
+              "value": "={{ $json['content:encoded'] || $json.contentSnippet || $json.content }}"
+            },
+            {
+              "id": "source_url",
+              "name": "source",
+              "type": "string",
+              "value": "={{ $json.link }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "bc53582d-66de-4fb3-ab17-04c2b28dd12d",
+      "name": "Standardize Fields4",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        256,
+        640
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2ffe594-180d-4e1d-b869-8056ac67015d",
+              "name": "title",
+              "type": "string",
+              "value": "={{ $json.title }}"
+            },
+            {
+              "id": "87c5a171-9ab9-4043-a72a-32aec218fe63",
+              "name": "pubDate",
+              "type": "string",
+              "value": "={{ $json.pubDate }}"
+            },
+            {
+              "id": "978b05c9-6e6b-4a18-bc06-4de785b19413",
+              "name": "conteudo",
+              "type": "string",
+              "value": "={{ $json['content:encoded'] || $json.contentSnippet || $json.content }}"
+            },
+            {
+              "id": "source_url",
+              "name": "source",
+              "type": "string",
+              "value": "={{ $json.link }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f8ed4998-b8ab-4572-b326-b49823546d67",
+      "name": "Standardize Fields5",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        256,
+        800
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "sendTo": "akanksha.aitools@gmail.com",
+        "subject": "Top AI news of last 24 hours! 🔥",
+        "emailType": "text",
+        "message": "={{ $json.content.parts[0].text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2256,
+        448
+      ],
+      "id": "6586fda7-4fc1-499b-845a-378350f2b897",
+      "name": "Send a message",
+      "webhookId": "218c779a-5273-48ff-ab1c-b31e55147475",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TtxsQUnMsqwsWEN2",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-pro",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-pro"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an AI news curator. Analyze these AI articles and create a WhatsApp-friendly summary.\n\nFORMAT (EXACTLY like this):\n🤖 AI NEWS DIGEST - {{ $today.format('yyyy-MM-dd') }}\n\n📢 MAJOR RELEASES & ANNOUNCEMENTS\n• OpenAI: GPT-5 preview released (multimodal capabilities)\n• Google: Gemini 2.0 launches (enterprise focus)\n• Meta: Llama 3.1 open-source (commercial license)\n\n🔬 RESEARCH & BREAKTHROUGHS  \n• MIT: New reasoning benchmark beats GPT-4 (logic improvement)\n• DeepMind: Protein folding breakthrough (drug discovery)\n• Stanford: Memory-efficient training method (cost reduction)\n\n💰 FUNDING & BUSINESS\n• Anthropic: $4B Amazon investment (cloud partnership)\n• Perplexity: $500M Series C (search competition)\n• Character.AI: Google acquisition talks (chatbot market)\n\n⚖️ REGULATION & POLICY\n• EU: AI Act implementation begins (compliance required)\n• US: Executive order on AI safety (federal guidelines)\n\n🛠️ TOOLS & PRODUCTS\n• GitHub: Copilot X for mobile (developer productivity)\n• Adobe: AI video editing suite (creator tools)\n• Microsoft: Bing Chat enterprise (business integration)\n\nRULES:\n- Each bullet = max 80 chars total\n- Include 8-15 items across categories\n- Skip empty sections\n- NO duplicates\n- Focus on IMPACT not details\n- No extra unnecessary emojis\n\nArticles to analyze: {{ $json.data }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        1936,
+        448
+      ],
+      "id": "dca5fa73-f0ce-4936-a14c-9b94c4eaea09",
+      "name": "Message a model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "hydNMJMIQKF7jq5s",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        944,
+        448
+      ],
+      "id": "0b1a1328-f4bb-460b-9cb5-04ad5ac64c5c",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "maxItems": 20
+      },
+      "id": "118919fa-cd59-42dc-b3cd-d44f74247957",
+      "name": "Limit to Top 20",
+      "type": "n8n-nodes-base.limit",
+      "position": [
+        1616,
+        448
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "pubDate"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        1424,
+        448
+      ],
+      "id": "ce2d50aa-b003-4e0e-b11f-be7692de7dd1",
+      "name": "Sort"
+    },
+    {
+      "parameters": {
+        "content": "## DATA CLEANUP\n- Extracts: title, date, content, URL\n- Handles different RSS formats\n- Creates uniform structure for processing",
+        "height": 144,
+        "width": 272,
+        "color": 3
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        208,
+        992
+      ],
+      "id": "4c88e67b-d27b-4993-89bc-09b4cb11553c",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## 🔗 COMBINE SOURCES\n- Merges all 6 RSS feeds\n- Increase 'numberInputs' if adding feeds",
+        "height": 144,
+        "width": 336,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        624,
+        752
+      ],
+      "id": "817cb2aa-8dbc-4bff-ae4c-a5a50626cc3e",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "content": "## 🤖 AI NEWS DIGEST WORKFLOW\n\nThis n8n workflow automatically collects AI news from 6 RSS sources, filters for relevance, removes duplicates, and uses Gemini to create a structured WhatsApp/email summary. Runs daily at 9 AM.\n\n**WORKFLOW BREAKDOWN:**\n\n📅 Schedule Trigger\nDaily execution at 9 AM. Change 'triggerAtHour' for different timing.\n\n**RSS Sources (6 feeds)**\nFetches from: OpenAI Blog, MIT Tech Review AI, VentureBeat AI, TechCrunch AI, The Verge AI, AI News.\n*Note:* Add more feeds by duplicating any RSS node.\n\n**Standardize Fields**  \nNormalizes RSS data (title, date, content, source) for consistent processing.\n\n**Merge Sources**\nCombines all 6 feeds into single stream. Increase 'numberInputs' if adding feeds.\n\n**Remove Duplicates**\nEliminates duplicate articles by title comparison.\n\n**AI Relevance Filter**\nKeeps only: (1) Last 24 hours articles (2) Contains AI keywords (GPT, ML, OpenAI, etc.)\n*Note:* Edit regex to add more AI/tech terms.\n\n**Sort by Date**\nOrders articles newest first for better AI analysis.\n\n**Limit Articles**\nProcesses top 20 most recent articles. Increase 'maxItems' for more coverage.\n\n**Aggregate Data**\nPackages filtered articles for AI processing.\n\n**AI Expert Analysis**\nUses Gemini 2.5 pro to create categorized WhatsApp/email summary in bullet points.\n*Note:* Change to GPT-4 for better quality (higher cost).\n\n**Send Summary**\nDelivers formatted digest to WhatsApp/email. Replace with Slack if preferred.\n*Note:* Configure your delivery method credentials.\n\n✅ SETUP REQUIREMENTS:\n1. Add OpenAI API key in 'AI Expert Analysis' node\n2. Configure WhatsApp/Email credentials in 'Send Summary' node  \n3. Test manually before activating\n4. Activate workflow for daily automation",
+        "height": 992,
+        "width": 912
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1824,
+        -1904
+      ],
+      "id": "3f7c1860-c51e-43be-9025-ebc98f69a510",
+      "name": "Sticky Note5"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Daily AI Digest Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "VentureBeat AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "MIT Tech Review AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "OpenAI Blog",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "TechCrunch AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "The Verge AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI News": {
+      "main": [
+        [
+          {
+            "node": "Standardize Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardize Fields": {
+      "main": [
+        [
+          {
+            "node": "Merge All Sources",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge All Sources": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Relevance Filter": {
+      "main": [
+        [
+          {
+            "node": "Sort",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate for AI": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VentureBeat AI": {
+      "main": [
+        [
+          {
+            "node": "Standardize Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MIT Tech Review AI": {
+      "main": [
+        [
+          {
+            "node": "Standardize Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Blog": {
+      "main": [
+        [
+          {
+            "node": "Standardize Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TechCrunch AI": {
+      "main": [
+        [
+          {
+            "node": "Standardize Fields4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "The Verge AI": {
+      "main": [
+        [
+          {
+            "node": "Standardize Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Standardize Fields1": {
+      "main": [
+        [
+          {
+            "node": "Merge All Sources",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Standardize Fields2": {
+      "main": [
+        [
+          {
+            "node": "Merge All Sources",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Standardize Fields3": {
+      "main": [
+        [
+          {
+            "node": "Merge All Sources",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Standardize Fields4": {
+      "main": [
+        [
+          {
+            "node": "Merge All Sources",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Standardize Fields5": {
+      "main": [
+        [
+          {
+            "node": "Merge All Sources",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "AI Relevance Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit to Top 20": {
+      "main": [
+        [
+          {
+            "node": "Aggregate for AI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sort": {
+      "main": [
+        [
+          {
+            "node": "Limit to Top 20",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2c4b2c20-57f9-47cf-9ecf-233ad9c2c37b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "34a64244812e338403cf414fc9ef07f337588e465e8854b2e1740776bff00bc8"
+  },
+  "id": "JoqLcBrr3DPQrdll",
+  "tags": []
+}
